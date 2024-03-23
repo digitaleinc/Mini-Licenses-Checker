@@ -14,7 +14,7 @@ rem Deactivate the virtual environment
 call venv\Scripts\deactivate.bat
 
 echo.
-echo Thanks for using Updater Bot
+echo Thanks for using Updater Bot by A.K.
 echo.
 
 pause
