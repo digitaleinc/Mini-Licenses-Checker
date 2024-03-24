@@ -1,3 +1,5 @@
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct.svg)](https://vshymanskyy.github.io/StandWithUkraine)
+
 # Mini-Licenses-Checker
 This project is a simply-made and scalable backend API for updating your Python projects.
 Front End is made via Telegram Bot for easy configuration.
