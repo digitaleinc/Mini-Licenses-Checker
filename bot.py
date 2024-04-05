@@ -1,53 +1,12 @@
-import random
-import time
-import uuid
-
+from modules.functions import process_create_folder, process_remove_folder, check_auth, send_current_files_structure, \
+    process_add_licence_1, process_add_licence_2, process_add_project_1
 from modules.markup import *
 from modules.db import *
 from config import bot, admins
+from modules.messages import send_current_projects, send_current_licences
 
-
-def check_auth(user_id) -> bool:
-    if str(user_id) in admins:
-        return True
-    else:
-        return False
-
-
-# Sending messages
-def send_current_projects(user_id):
-    projects = get_all_projects()
-    text = ('<b>📘 List of current projects</b>\n\n'
-            '<b>-------------------------</b>\n\n')
-
-    for i, project in enumerate(projects):
-        text += f"<b>{i + 1}. {project[1]}</b>\n"
-
-    if len(projects) == 0:
-        text += "<b>🤷‍♂️ No projects</b>"
-
-    bot.send_message(user_id,
-                     text,
-                     reply_markup=gen_markup_projects(),
-                     parse_mode='HTML')
-
-
-def send_current_licences(user_id):
-    licences = get_all_licences()
-    text = ('<b>🔐 List of current licences</b>\n\n'
-            'ID | PROJECT NAME | KEY | KEY NAME\n\n'
-            '<b>-------------------------</b>\n\n')
-
-    for i, licence in enumerate(licences):
-        text += f"<b>{i + 1}. {licence[1]} | {licence[2]} | {licence[3]}</b>\n"
-
-    if len(licences) == 0:
-        text += "<b>🤷‍♂️ No licences</b>"
-
-    bot.send_message(user_id,
-                     text,
-                     reply_markup=gen_markup_licences(),
-                     parse_mode='HTML')
+import time
+import uuid
 
 
 # Message Handlers
@@ -79,10 +38,23 @@ def get_text_messages(message):
         elif message.text == '➖ Remove Licence':
             bot.send_message(user_id, "💫 Please, choose a licence to remove",
                              reply_markup=gen_markup_delete_licence())
-            pass
         elif message.text == '🔚 Back':
             bot.send_message(user_id, "✔️ Welcome back to main menu",
                              reply_markup=gen_markup_admin())
+        elif message.text == '🚀 Upload project':
+            bot.send_message(user_id, "📑 Welcome to update menu", reply_markup=gen_markup_updater())
+            time.sleep(0.5)
+            send_current_files_structure(user_id, 'projects')
+        elif message.text == '➕ Create proj folder':
+            bot.send_message(user_id, "🖊 Write a name of project folder you wanna create:")
+            bot.register_next_step_handler(message, process_create_folder)
+        elif message.text == '➖ Remove proj folder':
+            bot.send_message(user_id, "🖊 Write a name of project folder you wanna remove:")
+            bot.register_next_step_handler(message, process_remove_folder)
+        elif message.text == '➕ Upload file to proj':
+            pass
+        elif message.text == '➖ Remove file from proj':
+            pass
 
 
 # Callback Handlers
@@ -191,7 +163,6 @@ def callback_method_of_key(call):
         print(error)
 
 
-# Callback Handlers
 @bot.callback_query_handler(
     func=lambda call: call.data and json.loads(call.data).get("licence_confirm") in [0, 1]
 )
@@ -249,59 +220,10 @@ def callback_remove_licence(call):
         print(error)
 
 
-def process_add_project_1(message):
-    user_id = message.from_user.id
-    project_name = message.text
-    if check_exist_project(project_name):
-        bot.send_message(user_id, f"⚠️ Project '{project_name}' had been already added to the database. "
-                                  f"You can't add the same project name twice.")
-    else:
-        bot.send_message(user_id, f"❗️ Check your project name attentively.\n"
-                                  f"\n"
-                                  f"It will be added to the Database and you will be able to add licences.\n"
-                                  f"\n"
-                                  f"📘 Project name: {project_name}\n"
-                                  f"\n"
-                                  f"📍 Please, confirm or decline",
-                         reply_markup=gen_markup_confirm_add_project(project_name))
-
-
-def process_add_licence_1(message, project_name):
-    user_id = message.from_user.id
-    licence_key = message.text
-    if check_exist_licence_by_key(licence_key):
-        bot.send_message(user_id, f"⚠️ Licence key '{licence_key}' had been already added to the database. "
-                                  f"You can't add the same licence key twice.")
-    else:
-        bot.send_message(user_id, f"📝 Please, choose a name for licence:")
-        bot.register_next_step_handler(message,
-                                       lambda msg: process_add_licence_2(msg, project_name, licence_key))
-
-
-def process_add_licence_2(message, project_name, licence_key):
-    user_id = message.from_user.id
-    licence_name = message.text
-    if check_exist_licence_by_name(licence_name):
-        bot.send_message(user_id, f"⚠️ Licence name '{licence_name}' had been already added to the database. "
-                                  f"You can't add the same licence name twice.")
-    else:
-        temp_id = random.randint(10000000, 99999999)
-        add_temp_licence(temp_id, project_name, licence_key, licence_name)
-        bot.send_message(user_id, f"❗️ Check your licence attentively:\n"
-                                  f"\n"
-                                  f"<b>📘 Project name:</b> {project_name}\n"
-                                  f"<b>🔐 Licence key:</b> {licence_key}\n"
-                                  f"<b>📝 Licence name:</b> {licence_name}\n"
-                                  f"\n"
-                                  f"📍 Please, confirm or decline",
-                         reply_markup=gen_markup_confirm_add_licence(temp_id),
-                         parse_mode='HTML')
-
-
 def start_bot():
     print("Bot was successfully started")
-    # for admin in admins:
-    #     bot.send_message(admin, f"✅ Bot was successfully restarted")
+    for admin in admins:
+        bot.send_message(admin, f"✅ Bot was successfully restarted")
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
 
 

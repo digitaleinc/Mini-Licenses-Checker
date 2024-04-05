@@ -7,7 +7,9 @@ def gen_markup_admin():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
     projects = KeyboardButton("📘 My Projects")
     licences = KeyboardButton("🔐 My Licences")
+    upload_proj = KeyboardButton("🚀 Upload project")
     markup.add(projects, licences)
+    markup.add(upload_proj)
     return markup
 
 
@@ -27,6 +29,19 @@ def gen_markup_licences():
     del_licences = KeyboardButton("➖ Remove Licence")
     back = KeyboardButton("🔚 Back")
     markup.add(add_licences, del_licences)
+    markup.add(back)
+    return markup
+
+
+def gen_markup_updater():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    create_folder = KeyboardButton("➕ Create proj folder")
+    remove_folder = KeyboardButton("➖ Remove proj folder")
+    add_file = KeyboardButton("➕ Upload file to proj")
+    rem_file = KeyboardButton("➖ Remove file from proj")
+    back = KeyboardButton("🔚 Back")
+    markup.add(create_folder, remove_folder)
+    markup.add(add_file, rem_file)
     markup.add(back)
     return markup
 
